@@ -1,0 +1,4 @@
+name: Cooldowns
+version: ${project.version}
+main: net.draycia.cooldowns.Cooldowns
+api-version: 1.13
