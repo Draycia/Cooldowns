@@ -129,4 +129,13 @@ public class CooldownManager implements Listener {
         userCooldowns.put(id, new MutableLong(cooldown));
     }
 
+    // TODO: stop callbacks for cooldowns
+    public void resetUserCooldowns(UUID player) {
+        cooldowns.remove(player);
+    }
+
+    public void resetAllCooldowns() {
+        cooldowns.clear();
+    }
+
 }
