@@ -8,13 +8,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 
 public class CooldownManager implements Listener {
 
     private JavaPlugin main;
 
-    private HashMap<UUID, HashMap<String, MutableLong>> cooldowns = new HashMap<>();
+    private HashMap<UUID, HashMap<String, AtomicLong>> cooldowns = new HashMap<>();
 
     private CooldownManager() {}
 
@@ -23,11 +24,11 @@ public class CooldownManager implements Listener {
     }
 
     void tick() {
-        Iterator<Map.Entry<String, MutableLong>> iterator;
-        Map.Entry<String, MutableLong> cooldown;
+        Iterator<Map.Entry<String, AtomicLong>> iterator;
+        Map.Entry<String, AtomicLong> cooldown;
 
-        for (Map.Entry<UUID, HashMap<String, MutableLong>> playerEntry : cooldowns.entrySet()) {
-            Set<Map.Entry<String, MutableLong>> entrySet = playerEntry.getValue().entrySet();
+        for (Map.Entry<UUID, HashMap<String, AtomicLong>> playerEntry : cooldowns.entrySet()) {
+            Set<Map.Entry<String, AtomicLong>> entrySet = playerEntry.getValue().entrySet();
 
             iterator = entrySet.iterator();
 
@@ -46,11 +47,11 @@ public class CooldownManager implements Listener {
         }
     }
 
-    HashMap<UUID, HashMap<String, MutableLong>> getCooldowns() {
+    HashMap<UUID, HashMap<String, AtomicLong>> getCooldowns() {
         return cooldowns;
     }
 
-    void setCooldowns(HashMap<UUID, HashMap<String, MutableLong>> cooldowns) {
+    void setCooldowns(HashMap<UUID, HashMap<String, AtomicLong>> cooldowns) {
         this.cooldowns = cooldowns;
     }
 
@@ -59,14 +60,14 @@ public class CooldownManager implements Listener {
     }
 
     public long getUserCooldown(UUID uuid, String id) {
-        HashMap<String, MutableLong> userCooldowns = cooldowns.get(uuid);
+        HashMap<String, AtomicLong> userCooldowns = cooldowns.get(uuid);
 
         if (userCooldowns == null) {
             return 0;
         }
 
         if (userCooldowns.containsKey(id)) {
-            long cooldown = userCooldowns.get(id).getValue();
+            long cooldown = userCooldowns.get(id).get();
 
             if (cooldown <= 0) {
                 userCooldowns.remove(id);
@@ -107,16 +108,16 @@ public class CooldownManager implements Listener {
             return false;
         }
 
-        HashMap<String, MutableLong> userCooldowns = cooldowns.get(player);
+        HashMap<String, AtomicLong> userCooldowns = cooldowns.get(player);
 
         if (userCooldowns == null) {
-            HashMap<String, MutableLong> newCooldowns = new HashMap<>();
+            HashMap<String, AtomicLong> newCooldowns = new HashMap<>();
 
             cooldowns.put(player, newCooldowns);
             userCooldowns = newCooldowns;
         }
 
-        userCooldowns.put(id, new MutableLong(cooldown));
+        userCooldowns.put(id, new AtomicLong(cooldown));
 
         return true;
     }

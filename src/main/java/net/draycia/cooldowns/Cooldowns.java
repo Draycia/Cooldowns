@@ -11,6 +11,7 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 public final class Cooldowns extends JavaPlugin {
 
@@ -19,7 +20,7 @@ public final class Cooldowns extends JavaPlugin {
     private File dataFile = new File(getDataFolder(), "data.json");
 
     private Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private Type type = new TypeToken<HashMap<UUID, HashMap<String, MutableLong>>>() {}.getType();
+    private Type type = new TypeToken<HashMap<UUID, HashMap<String, AtomicLong>>>() {}.getType();
 
     @Override
     public void onEnable() {
@@ -52,7 +53,7 @@ public final class Cooldowns extends JavaPlugin {
         }
 
         try {
-            HashMap<UUID, HashMap<String, MutableLong>> json = gson.fromJson(new FileReader(dataFile), type);
+            HashMap<UUID, HashMap<String, AtomicLong>> json = gson.fromJson(new FileReader(dataFile), type);
 
             if (json != null) {
                 cooldownManager.setCooldowns(json);
