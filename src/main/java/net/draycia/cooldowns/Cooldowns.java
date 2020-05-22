@@ -3,6 +3,7 @@ package net.draycia.cooldowns;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -18,12 +19,13 @@ public final class Cooldowns extends JavaPlugin {
     private File dataFile = new File(getDataFolder(), "data.json");
 
     private Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private Type type = new TypeToken<HashMap<UUID, HashMap<String, Long>>>() {}.getType();
+    private Type type = new TypeToken<HashMap<UUID, HashMap<String, MutableLong>>>() {}.getType();
 
     @Override
     public void onEnable() {
         loadCooldowns();
         getServer().getServicesManager().register(CooldownManager.class, cooldownManager, this, ServicePriority.High);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, cooldownManager::tick, 1, 1);
     }
 
     @Override
@@ -50,7 +52,7 @@ public final class Cooldowns extends JavaPlugin {
         }
 
         try {
-            HashMap<UUID, HashMap<String, Long>> json = gson.fromJson(new FileReader(dataFile), type);
+            HashMap<UUID, HashMap<String, MutableLong>> json = gson.fromJson(new FileReader(dataFile), type);
 
             if (json != null) {
                 cooldownManager.setCooldowns(json);
