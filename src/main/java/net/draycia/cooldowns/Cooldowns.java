@@ -3,6 +3,7 @@ package net.draycia.cooldowns;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicePriority;
@@ -53,13 +54,13 @@ public final class Cooldowns extends JavaPlugin {
             }
         }
 
-        try {
-            HashMap<UUID, HashMap<String, AtomicLong>> json = gson.fromJson(new FileReader(dataFile), type);
+        try (JsonReader reader = gson.newJsonReader(new FileReader(dataFile))) {
+            HashMap<UUID, HashMap<String, AtomicLong>> json = gson.fromJson(reader, type);
 
             if (json != null) {
                 cooldownManager.setCooldowns(json);
             }
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
