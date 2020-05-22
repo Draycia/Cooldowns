@@ -79,42 +79,32 @@ public class CooldownManager implements Listener {
         return 0;
     }
 
-    public void setUserCooldown(UUID player, String id, TimeUnit timeUnit, long cooldown) {
-        setUserCooldown(player, id, timeUnit.toSeconds(cooldown) * 20);
+    public boolean setUserCooldown(UUID player, String id, TimeUnit timeUnit, long cooldown) {
+        return setUserCooldown(player, id, timeUnit.toSeconds(cooldown) * 20);
     }
 
-    public void setUserCooldown(final UUID player, final String id, TimeUnit timeUnit, long cooldown, BiConsumer<UUID, String> function) {
-        setUserCooldown(player, id, timeUnit.toSeconds(cooldown) * 20, function);
+    public boolean setUserCooldown(final UUID player, final String id, TimeUnit timeUnit, long cooldown, BiConsumer<UUID, String> function) {
+        return setUserCooldown(player, id, timeUnit.toSeconds(cooldown) * 20, function);
     }
 
-    public void setUserCooldown(UUID player, String id, long cooldown, BiConsumer<UUID, String> function) {
-        CooldownStartEvent cooldownStartEvent = new CooldownStartEvent(player, id);
-        Bukkit.getPluginManager().callEvent(cooldownStartEvent);
+    public boolean setUserCooldown(UUID player, String id, long cooldown, BiConsumer<UUID, String> function) {
+        boolean success = setUserCooldown(player, id, cooldown);
 
-        if (cooldownStartEvent.isCancelled()) {
-            return;
+        if (!success) {
+            return false;
         }
-
-        HashMap<String, MutableLong> userCooldowns = cooldowns.get(player);
-
-        if (userCooldowns == null) {
-            HashMap<String, MutableLong> newCooldowns = new HashMap<>();
-
-            cooldowns.put(player, newCooldowns);
-            userCooldowns = newCooldowns;
-        }
-
-        userCooldowns.put(id, new MutableLong(cooldown));
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(main, () -> function.accept(player, id), cooldown);
+
+        return true;
     }
 
-    public void setUserCooldown(UUID player, String id, long cooldown) {
+    public boolean setUserCooldown(UUID player, String id, long cooldown) {
         CooldownStartEvent cooldownStartEvent = new CooldownStartEvent(player, id);
         Bukkit.getPluginManager().callEvent(cooldownStartEvent);
 
         if (cooldownStartEvent.isCancelled()) {
-            return;
+            return false;
         }
 
         HashMap<String, MutableLong> userCooldowns = cooldowns.get(player);
@@ -127,6 +117,8 @@ public class CooldownManager implements Listener {
         }
 
         userCooldowns.put(id, new MutableLong(cooldown));
+
+        return true;
     }
 
     // TODO: stop callbacks for cooldowns
