@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public final class Cooldowns extends JavaPlugin {
 
-    private CooldownManager cooldownManager = new CooldownManager();
+    private CooldownManager cooldownManager = new CooldownManager(this);
 
     private File dataFile = new File(getDataFolder(), "data.json");
 

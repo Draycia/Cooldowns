@@ -1,12 +1,25 @@
 package net.draycia.cooldowns;
 
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
+
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 public class CooldownManager {
 
+    private JavaPlugin main;
+
     private HashMap<UUID, HashMap<String, Long>> cooldowns = new HashMap<>();
+
+    private CooldownManager() {}
+
+    public CooldownManager(JavaPlugin main) {
+        this.main = main;
+    }
 
     HashMap<UUID, HashMap<String, Long>> getCooldowns() {
         return cooldowns;
@@ -21,10 +34,7 @@ public class CooldownManager {
     }
 
     public long getUserCooldown(UUID uuid, String id) {
-        HashMap<String, Long> userCooldowns =
-                cooldowns
-                    .get(
-                        uuid);
+        HashMap<String, Long> userCooldowns = cooldowns.get(uuid);
 
         if (userCooldowns == null) {
             return 0;
@@ -57,6 +67,23 @@ public class CooldownManager {
         }
 
         userCooldowns.put(id, cooldownEnd);
+    }
+
+    public void setUserCooldown(final UUID player, final String id, TimeUnit timeUnit, long cooldown, BiConsumer<UUID, String> function) {
+        long cooldownEnd = System.currentTimeMillis() + timeUnit.toMillis(cooldown);
+
+        HashMap<String, Long> userCooldowns = cooldowns.get(player);
+
+        if (userCooldowns == null) {
+            HashMap<String, Long> newCooldowns = new HashMap<>();
+
+            cooldowns.put(player, newCooldowns);
+            userCooldowns = newCooldowns;
+        }
+
+        userCooldowns.put(id, cooldownEnd);
+
+        Bukkit.getScheduler().scheduleSyncDelayedTask(main, () -> function.accept(player, id), timeUnit.toMillis(cooldown) / 15);
     }
 
 }
